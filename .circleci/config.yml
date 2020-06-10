@@ -30,21 +30,21 @@ jobs:
             cd << parameters.service_path >>
             npm run lint
 
-      - run:
-          name: Unit testing
-          command: |
-            cd << parameters.service_path >>
-            npm test
+      # - run:
+      #     name: Unit testing
+      #     command: |
+      #       cd << parameters.service_path >>
+      #       npm test
 
       - run:
           name: Build production artifacts
           command: |
             cd << parameters.service_path >>
             npm run build
-            ls -la build
+            ls -la dist
 
       - aws-s3/sync:
-          from: << parameters.service_path >>/build
+          from: << parameters.service_path >>/dist
           overwrite: true
           to: "s3://my-cloud-dev-s3"
 
@@ -77,12 +77,12 @@ jobs:
             cd << parameters.service_path >>
             npm install
 
-      - run:
-          name: Unit test application
-          no_output_timeout: 20m
-          command: |
-            cd << parameters.service_path >>
-            npm test
+      # - run:
+      #     name: Unit test application
+      #     no_output_timeout: 20m
+      #     command: |
+      #       cd << parameters.service_path >>
+      #       npm test
 
       - run:
           name: Deploy application
