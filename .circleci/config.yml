@@ -1,0 +1,40 @@
+version: 2.1
+
+jobs:
+  deploy-service:
+    docker:
+      - image: circleci/node:12.10
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - dependencies-cache-{{ checksum "package-lock.json" }}
+            - dependencies-cache
+
+      - run:
+          name: Install Serverless CLI
+          command: sudo npm i -g serverless
+
+      - run:
+          name: Install dependencies
+          command: |
+            npm install
+
+      - run:
+          name: Deploy application
+          no_output_timeout: 20m
+          command: |
+            sls deploy -v
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies-cache-{{ checksum "package-lock.json" }}
+
+workflows:
+  build-deploy:
+    jobs:
+      - deploy-service:
+          name: Deploy Inventory Serverless App
+          context: Development
