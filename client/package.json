@@ -7,9 +7,11 @@
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
-    "start": "npm run serve"
+    "start": "npm run serve -- --port 3000"
   },
   "dependencies": {
+    "auth0-js": "^9.13.2",
+    "axios": "^0.19.2",
     "core-js": "^3.6.5",
     "vue": "^2.6.11",
     "vue-router": "^3.3.2",

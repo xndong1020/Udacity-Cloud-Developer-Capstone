@@ -1,5 +1,7 @@
 ### Udacity Inventory Management App
 
+[![<xndong1020>](https://circleci.com/gh/xndong1020/Udacity-Cloud-Developer-Capstone.svg?style=shield)](https://github.com/xndong1020/Udacity-Cloud-Developer-Capstone)
+
 #### How to run
 
 **back-end (serverless restful api)**
