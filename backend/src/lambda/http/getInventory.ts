@@ -5,7 +5,7 @@ import * as middy from "middy";
 import { cors } from "middy/middlewares";
 
 import { createLogger } from "../../utils/logger";
-const logger = createLogger("Inventory businessLogic");
+const logger = createLogger("Get Inventory Handler");
 
 import { getAllInventoriesByUserId } from "../../businessLogic/Inventory";
 import { parseToken } from "../../auth/utils";

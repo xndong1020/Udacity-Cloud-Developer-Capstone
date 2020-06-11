@@ -8,7 +8,7 @@ import { generateUploadUrl } from "../../businessLogic/Attachment";
 import { updateInventoryAttachmentUrl } from "../../businessLogic/Inventory";
 
 import { createLogger } from "../../utils/logger";
-const logger = createLogger("Inventory businessLogic");
+const logger = createLogger("Inventory Attachment Handler");
 
 import { parseToken } from "../../auth/utils";
 

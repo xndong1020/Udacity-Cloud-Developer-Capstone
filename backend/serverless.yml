@@ -59,6 +59,20 @@ custom:
               type: number
             unit:
               type: number
+      - name: UpdateInventoryRequest
+        contentType: "application/json"
+        schema:
+          required:
+            - name
+            - price
+            - unit
+          properties:
+            name:
+              type: string
+            price:
+              type: number
+            unit:
+              type: number
 
 functions:
   Auth:
@@ -104,6 +118,30 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INVENTORY_TABLE}
+
+  UpdateInventory:
+    handler: src/lambda/http/updateInventory.handler
+    events:
+      - http:
+          method: patch
+          path: inventory/{inventoryId}
+          cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update an existing inventory item
+            description: Create an existing inventory item
+            tags:
+              - Inventory
+            requestModels:
+              "application/json": UpdateInventoryRequest
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: "UpdateInventoryExecutionRole"
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INVENTORY_TABLE}
 
   GenerateUploadUrl:

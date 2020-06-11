@@ -8,8 +8,8 @@ export const generateUploadUrl = async (
   inventoryId: string,
   imageId: string
 ): Promise<string> => {
-  const isTodoItemExists = await inventoryRepository.checkInventoryItemExists(inventoryId)
-  if (!isTodoItemExists) throw new Error('Invalid inventoryId')
+  const isInventoryItemExists = await inventoryRepository.checkInventoryItemExists(inventoryId)
+  if (!isInventoryItemExists) throw new Error('Invalid inventoryId')
 
   return attachmentRepo.generateUploadUrl(imageId)
 }
