@@ -1,33 +1,19 @@
 import "source-map-support/register";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import * as middy from "middy";
 import { cors } from "middy/middlewares";
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-
-import { CreateInventoryRequest } from "../../requests/CreateInventoryRequest";
-import { createInventory } from "../../businessLogic/Inventory";
-
 import { createLogger } from "../../utils/logger";
 const logger = createLogger("Inventory businessLogic");
 
+import { getAllInventoriesByUserId } from "../../businessLogic/Inventory";
 import { parseToken } from "../../auth/utils";
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const newInventory: CreateInventoryRequest = JSON.parse(event.body);
-
-    const { name, price, unit } = newInventory;
-
-    if (!name || !name.trim() || !price || !unit)
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "Invalid request format" }),
-      };
-
     try {
       let token: string;
-
       try {
         token = parseToken(event.headers.Authorization);
       } catch (err) {
@@ -38,14 +24,14 @@ export const handler = middy(
         };
       }
 
-      const item = await createInventory(newInventory, token);
+      const items = await getAllInventoriesByUserId(token);
 
       return {
-        statusCode: 201,
-        body: JSON.stringify({ item }),
+        statusCode: 200,
+        body: JSON.stringify({ items }),
       };
     } catch (err) {
-      logger.error("Fail to create inventory", err);
+      logger.error("Fail to get inventory list", err);
       return {
         statusCode: 400,
         body: JSON.stringify({ message: err.message }),
