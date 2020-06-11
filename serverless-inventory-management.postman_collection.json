@@ -1,0 +1,187 @@
+{
+	"info": {
+		"_postman_id": "bd8d60ff-61ea-4dcb-abbb-eb35ec8378d4",
+		"name": "serverless-inventory-management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Inventory",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{host}}/{{stage}}/inventory",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"{{stage}}",
+						"inventory"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Inventory",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"books\",\r\n    \"price\": 30,\r\n    \"unit\": 5\r\n}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "https://{{host}}/{{stage}}/inventory",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"{{stage}}",
+						"inventory"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Attachement Url",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://{{host}}/{{stage}}/inventory/0c612ce9-2002-40f0-baff-9f1c9f9cecb3/attachment",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"{{stage}}",
+						"inventory",
+						"0c612ce9-2002-40f0-baff-9f1c9f9cecb3",
+						"attachment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Inventory",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"books22222\",\r\n    \"price\": 30,\r\n    \"unit\": 5\r\n}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "https://{{host}}/{{stage}}/inventory/6ac97dfa-a29e-4135-8ad1-ca7d26875ca4",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"{{stage}}",
+						"inventory",
+						"6ac97dfa-a29e-4135-8ad1-ca7d26875ca4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Inventory",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://{{host}}/{{stage}}/inventory/6ac97dfa-a29e-4135-8ad1-ca7d26875ca4",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"{{stage}}",
+						"inventory",
+						"6ac97dfa-a29e-4135-8ad1-ca7d26875ca4"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik5FVXlPRFpETVVReU1qVXlPVEJEUVVWRFFVWkNSalF4TkRJM05rWTBPVFl4UXpneE9EVXpPUSJ9.eyJlbWFpbCI6ImlzZGFuY2UyMDA0QGhvdG1haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImNsaWVudElEIjoidHBSMW82dGdRMzZmb2tjdFRVakFpT3FrWmp1YW5TY3UiLCJ1cGRhdGVkX2F0IjoiMjAyMC0wNi0xMVQwMDo1MDoxMC41MzJaIiwidXNlcl9pZCI6ImF1dGgwfDVkMjFlMGVhODE3NzAwMGUzMjZmYjNmMiIsIm5hbWUiOiJpc2RhbmNlMjAwNEBob3RtYWlsLmNvbSIsInBpY3R1cmUiOiJodHRwczovL3MuZ3JhdmF0YXIuY29tL2F2YXRhci9kZmQxMzNjZGNhZmUxZjYyYTQzMDBkMWZhNWIzMWFiZT9zPTQ4MCZyPXBnJmQ9aHR0cHMlM0ElMkYlMkZjZG4uYXV0aDAuY29tJTJGYXZhdGFycyUyRmlzLnBuZyIsIm5pY2tuYW1lIjoiaXNkYW5jZTIwMDQiLCJpZGVudGl0aWVzIjpbeyJ1c2VyX2lkIjoiNWQyMWUwZWE4MTc3MDAwZTMyNmZiM2YyIiwicHJvdmlkZXIiOiJhdXRoMCIsImNvbm5lY3Rpb24iOiJVc2VybmFtZS1QYXNzd29yZC1BdXRoZW50aWNhdGlvbiIsImlzU29jaWFsIjpmYWxzZX1dLCJjcmVhdGVkX2F0IjoiMjAxOS0wNy0wN1QxMjowOToxNC4xODJaIiwiaXNzIjoiaHR0cHM6Ly9iYnhpdC5hdS5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NWQyMWUwZWE4MTc3MDAwZTMyNmZiM2YyIiwiYXVkIjoidHBSMW82dGdRMzZmb2tjdFRVakFpT3FrWmp1YW5TY3UiLCJpYXQiOjE1OTE4MzY2MTAsImV4cCI6MTU5MTkwODYxMCwiYXRfaGFzaCI6IjF1YlJiendYUmtQSlVkN2lFZWNlNVEiLCJub25jZSI6IkJPYzFkTjVBYUJ1TE9SZDBHZHcyVGdTUjdhWXc1MHhIIn0.jsRjS4QKe-VxfHIYpNnyn_BCskFvKG5X118Hi3pPTr2hwx2TZ-jXiOUSlFAW3YU0mt04T_D1yBGzYnc4gXnccJplfe0D5CyHfsFTFyhV4Plx-YR7aNHUMUyGG0kLGON98sI7FX3OSr86_ZD0inEwLXj81xm0BGeJxGUOOqFH4lrS_jbev2Eym3dHBwCJKvnfzTS3095Kn75wkM7SE9pWAwfpP8R9BIiz258WCCeFcU5pMDedItf3u4gMfPhJwNHUompN65O8qN3xR7xUkkwg_F46qmUv74tdflgLsalOzs7wZoJVNiBfBmyrcASIs7I9_nKlkLWashzwx10R8TelvA",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "f274d9a1-45b0-4328-8868-981efbdcaaa8",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "e84a4bb4-6e7e-4456-b6b5-9bef3ac573c0",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "47e6cd65-7e69-46bf-a940-b209c5a0b702",
+			"key": "host",
+			"value": "{{apiId}}.execute-api.us-west-2.amazonaws.com",
+			"type": "string"
+		},
+		{
+			"id": "96ee6e27-a905-4013-80cb-6f52d47985b6",
+			"key": "stage",
+			"value": "dev",
+			"type": "string"
+		},
+		{
+			"id": "dc9bcfd5-6e49-423a-8cb5-70e783172967",
+			"key": "apiId",
+			"value": "1yluq7f665",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
