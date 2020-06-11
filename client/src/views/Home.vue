@@ -15,7 +15,7 @@
           <v-toolbar-title>Admin Panel</v-toolbar-title>
           <v-spacer></v-spacer>
 
-          <v-dialog v-model="uploadFile" max-width="500px">
+          <v-dialog v-model="dialog" max-width="500px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on"
                 >New Item</v-btn
@@ -64,8 +64,10 @@
                       <v-col cols="12">
                         <v-file-input
                           label="Upload attachment"
-                          v-model="editedItem.file"
-                        ></v-file-input>
+                          accept="image/*"
+                          show-size
+                          @change="handleFileUpload"
+                        />
                       </v-col>
                     </v-row>
                   </v-container>
@@ -82,6 +84,10 @@
             </v-form>
           </v-dialog>
         </v-toolbar>
+      </template>
+      <template v-slot:item.attachmentUrl="{ item }">
+        <span v-if="!item.attachmentUrl">N/A</span>
+        <img v-else :src="item.attachmentUrl" class="attachment" />
       </template>
       <template v-slot:item.actions="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
@@ -100,7 +106,7 @@ export default {
     return {
       valid: false,
       dialog: false,
-      uploadFile: "",
+      chosenFile: null,
       required: [(v) => !!v || "This field is required"],
       headers: [
         { text: "name", value: "name" },
@@ -115,12 +121,14 @@ export default {
         name: "",
         price: 0,
         unit: 0,
+        file: "",
       },
       defaultItem: {
         inventoryId: "",
         name: "",
         price: 0,
         unit: 0,
+        file: "",
       },
     };
   },
@@ -167,7 +175,7 @@ export default {
     editItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
-      this.uploadFile = true;
+      this.dialog = true;
     },
 
     deleteItem(item) {
@@ -175,27 +183,69 @@ export default {
       confirm("Are you sure you want to delete this item?") &&
         this.items.splice(index, 1);
     },
-
+    handleFileUpload(file) {
+      this.chosenFile = file;
+    },
     close() {
-      this.uploadFile = false;
+      this.dialog = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
     },
-
     save() {
       const form = this.$refs.myForm;
       if (form.validate()) {
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
+        };
         if (this.editedIndex > -1) {
-          // Object.assign(this.items[this.editedIndex], this.editedItem);
+          // console.log("uploadfile", this.chosenFile);
+          this.$store.commit("setLoading", true);
+          this.$axios
+            .post(
+              `/inventory/${this.editedItem.inventoryId}/attachment`,
+              null,
+              { headers: headers }
+            )
+            .then((res) => res.data.uploadUrl)
+            .then((url) => {
+              this.$store.commit("setLoading", true);
+              this.$axios
+                .put(url, this.chosenFile, {
+                  headers: {
+                    "Content-Type": "image/jpeg",
+                  },
+                })
+                .then(() => {
+                  this.$store.commit("setLoading", true);
+                  this.$axios
+                    .get("/inventory", {
+                      headers: {
+                        Authorization: `Bearer ${this.token}`,
+                      },
+                    })
+                    .then((res) => {
+                      this.$store.commit("SET", {
+                        key: "items",
+                        value: res.data.items,
+                      });
+                    })
+                    .finally(() => {
+                      this.$store.commit("setLoading", false);
+                    });
+                })
+                .finally(() => {
+                  this.$store.commit("setLoading", false);
+                });
+            })
+            .catch()
+            .finally(this.$store.commit("setLoading", false));
         } else {
           // create
           this.$store.commit("setLoading", true);
-          const headers = {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.token}`,
-          };
+
           this.$axios
             .post(
               "/inventory",
@@ -233,3 +283,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.attachment {
+  border: 1px solid #888888;
+  width: 100px;
+}
+</style>
