@@ -11,16 +11,26 @@ plugins:
 provider:
   name: aws
   runtime: nodejs12.x
+
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-west-2'}
+
   apiGateway:
     minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
+
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     INVENTORY_TABLE: Inventory-${self:provider.stage}
     ATTACHMENTS_S3_BUCKET: inventory-attachments-${self:provider.stage}
     USER_ID_INDEX: UserIdIndex
     IMAGES_SIGNED_URL_EXPIRATION: 60 * 60 * 5 # 5 mins
+
+  iamRoleStatements:
+    - Effect: "Allow" # xray permissions (required)
+      Action:
+        - "xray:PutTraceSegments"
+      Resource:
+        - "*"
 
 custom:
   webpack:
@@ -31,16 +41,52 @@ custom:
     api:
       info:
         version: v1.0.0
-        title: Udagram API
-        description: Serverless application for images sharing
+        title: Inventory Management Serverless
+        description: Serverless application for Inventory Management
+
+    models:
+      - name: CreateInventoryRequest
+        contentType: "application/json"
+        schema:
+          required:
+            - name
+            - price
+            - unit
+          properties:
+            name:
+              type: string
+            price:
+              type: number
+            unit:
+              type: number
 
 functions:
-  hello:
-    handler: handler.hello
+  Auth:
+    handler: src/lambda/auth/auth0Authorizer.handler
+
+  CreateInventory:
+    handler: src/lambda/http/createInventory.handler
     events:
       - http:
-          method: get
-          path: hello
+          method: post
+          path: inventory
+          cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new inventory item
+            description: Create a new inventory item
+            tags:
+              - Inventory
+            requestModels:
+              "application/json": CreateInventoryRequest
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: "CreateInventoryRole"
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INVENTORY_TABLE}
 
 resources:
   Resources:
