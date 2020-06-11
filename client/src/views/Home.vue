@@ -1,11 +1,9 @@
 <template>
   <div>
-    <v-container v-if="loading" fluid>
-      <v-row align="center" justify="center">
-        <v-col>
-          <div>
-            <img src="@/assets/loading.svg" />
-          </div>
+    <v-container v-if="loading" fluid fill-height>
+      <v-row align="center" justify="center" style="height: 90vh;">
+        <v-col cols="12" align="center">
+          <img src="@/assets/loading.svg" />
         </v-col>
       </v-row>
     </v-container>
@@ -170,6 +168,7 @@ export default {
         await this.deleteItem(item.inventoryId);
     },
     handleFileUpload(file) {
+      if (!file) return;
       this.chosenFile = file;
     },
     close() {
@@ -181,19 +180,20 @@ export default {
     },
     async save() {
       const form = this.$refs.myForm;
-      if (form.validate()) {
-        if (this.editedIndex > -1) {
-          // update attachment url
+      if (!form.validate()) return;
+      if (this.editedIndex > -1) {
+        // update attachment url
+        if (this.editedItem.inventoryId && this.chosenFile) {
           await this.updateItemUrl({
             inventoryId: this.editedItem.inventoryId,
             file: this.chosenFile,
           });
-        } else {
-          // create
-          await this.createItem(this.editedItem);
         }
-        this.close();
+      } else {
+        // create
+        await this.createItem(this.editedItem);
       }
+      this.close();
     },
   },
 };
