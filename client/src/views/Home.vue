@@ -35,9 +35,9 @@
                           v-model="editedItem.name"
                           :disabled="editedIndex !== -1"
                           :readonly="editedIndex !== -1"
-                          label="Dessert name"
+                          label="Item name"
                           :rules="required"
-                        ></v-text-field>
+                        />
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
@@ -47,7 +47,7 @@
                           type="number"
                           label="Price"
                           :rules="required"
-                        ></v-text-field>
+                        />
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
@@ -75,9 +75,9 @@
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close"
-                    >Cancel</v-btn
-                  >
+                  <v-btn color="blue darken-1" text @click="close">
+                    Cancel
+                  </v-btn>
                   <v-btn color="blue darken-1" text @click="save">Save</v-btn>
                 </v-card-actions>
               </v-card>
@@ -121,14 +121,12 @@ export default {
         name: "",
         price: 0,
         unit: 0,
-        file: "",
       },
       defaultItem: {
         inventoryId: "",
         name: "",
         price: 0,
         unit: 0,
-        file: "",
       },
     };
   },
@@ -147,28 +145,23 @@ export default {
       val || this.close();
     },
   },
-  mounted() {
+  async mounted() {
     if (!this.token) {
       const token = localStorage.getItem("id_token");
       if (token) this.$store.commit("setToken", token);
     }
     if (this.token) {
       this.$store.commit("setLoading", true);
-      this.$axios
-        .get("/inventory", {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
-        })
-        .then((res) => {
-          this.$store.commit("SET", {
-            key: "items",
-            value: res.data.items,
-          });
-        })
-        .finally(() => {
-          this.$store.commit("setLoading", false);
-        });
+      const res = await this.$axios.get("/inventory", {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+      this.$store.commit("SET", {
+        key: "items",
+        value: res.data.items,
+      });
+      this.$store.commit("setLoading", false);
     }
   },
   methods: {
@@ -214,7 +207,7 @@ export default {
         this.editedIndex = -1;
       });
     },
-    save() {
+    async save() {
       const form = this.$refs.myForm;
       if (form.validate()) {
         const headers = {
@@ -222,81 +215,53 @@ export default {
           Authorization: `Bearer ${this.token}`,
         };
         if (this.editedIndex > -1) {
-          // console.log("uploadfile", this.chosenFile);
           this.$store.commit("setLoading", true);
-          this.$axios
-            .post(
-              `/inventory/${this.editedItem.inventoryId}/attachment`,
-              null,
-              { headers: headers }
-            )
-            .then((res) => res.data.uploadUrl)
-            .then((url) => {
-              this.$store.commit("setLoading", true);
-              this.$axios
-                .put(url, this.chosenFile, {
-                  headers: {
-                    "Content-Type": "image/jpeg",
-                  },
-                })
-                .then(() => {
-                  this.$store.commit("setLoading", true);
-                  this.$axios
-                    .get("/inventory", {
-                      headers: {
-                        Authorization: `Bearer ${this.token}`,
-                      },
-                    })
-                    .then((res) => {
-                      this.$store.commit("SET", {
-                        key: "items",
-                        value: res.data.items,
-                      });
-                    })
-                    .finally(() => {
-                      this.$store.commit("setLoading", false);
-                    });
-                })
-                .finally(() => {
-                  this.$store.commit("setLoading", false);
-                });
-            })
-            .catch()
-            .finally(this.$store.commit("setLoading", false));
+          const res = await this.$axios.post(
+            `/inventory/${this.editedItem.inventoryId}/attachment`,
+            null,
+            { headers: headers }
+          );
+
+          await this.$axios.put(res.data.uploadUrl, this.chosenFile, {
+            headers: {
+              "Content-Type": "image/jpeg",
+            },
+          });
+
+          const resp = await this.$axios.get("/inventory", {
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+            },
+          });
+          this.$store.commit("SET", {
+            key: "items",
+            value: resp.data.items,
+          });
+          this.$store.commit("setLoading", false);
         } else {
           // create
           this.$store.commit("setLoading", true);
+          await this.$axios.post(
+            "/inventory",
+            {
+              name: this.editedItem.name,
+              price: parseInt(this.editedItem.price),
+              unit: parseInt(this.editedItem.unit),
+            },
+            { headers: headers }
+          );
 
-          this.$axios
-            .post(
-              "/inventory",
-              {
-                name: this.editedItem.name,
-                price: parseInt(this.editedItem.price),
-                unit: parseInt(this.editedItem.unit),
-              },
-              { headers: headers }
-            )
-            .then(() => {
-              this.$axios
-                .get("/inventory", {
-                  headers: {
-                    Authorization: `Bearer ${this.token}`,
-                  },
-                })
-                .then((res) => {
-                  this.$store.commit("SET", {
-                    key: "items",
-                    value: res.data.items,
-                  });
-                })
-                .finally(() => {
-                  this.$store.commit("setLoading", false);
-                });
-            })
-            .finally(() => {
-              this.$store.commit("setLoading", false);
-            });
+          const res = await this.$axios.get("/inventory", {
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+            },
+          });
+
+          this.$store.commit("SET", {
+            key: "items",
+            value: res.data.items,
+          });
+          this.$store.commit("setLoading", false);
         }
         this.close();
       }
