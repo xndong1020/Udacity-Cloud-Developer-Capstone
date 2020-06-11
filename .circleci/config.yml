@@ -30,11 +30,11 @@ jobs:
             cd << parameters.service_path >>
             npm run lint
 
-      # - run:
-      #     name: Unit testing
-      #     command: |
-      #       cd << parameters.service_path >>
-      #       npm test
+      - run:
+          name: Unit testing
+          command: |
+            cd << parameters.service_path >>
+            npm test
 
       - run:
           name: Build production artifacts
@@ -77,12 +77,12 @@ jobs:
             cd << parameters.service_path >>
             npm install
 
-      # - run:
-      #     name: Unit test application
-      #     no_output_timeout: 20m
-      #     command: |
-      #       cd << parameters.service_path >>
-      #       npm test
+      - run:
+          name: Unit test application
+          no_output_timeout: 20m
+          command: |
+            cd << parameters.service_path >>
+            npm test
 
       - run:
           name: Deploy application
