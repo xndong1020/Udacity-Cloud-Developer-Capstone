@@ -91,7 +91,7 @@
       </template>
       <template v-slot:item.actions="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-        <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
+        <v-icon small @click="handleDeleteItem(item)">mdi-delete</v-icon>
       </template>
       <template v-slot:no-data>No data</template>
     </v-data-table>
@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   data() {
@@ -109,10 +109,10 @@ export default {
       chosenFile: null,
       required: [(v) => !!v || "This field is required"],
       headers: [
-        { text: "name", value: "name" },
-        { text: "price", value: "price" },
-        { text: "unit", value: "unit" },
-        { text: "atachment", value: "attachmentUrl" },
+        { text: "Name", value: "name" },
+        { text: "Price", value: "price" },
+        { text: "Unit", value: "unit" },
+        { text: "Atachment", value: "attachmentUrl" },
         { text: "Actions", value: "actions", sortable: false },
       ],
       editedIndex: -1,
@@ -150,52 +150,24 @@ export default {
       const token = localStorage.getItem("id_token");
       if (token) this.$store.commit("setToken", token);
     }
-    if (this.token) {
-      this.$store.commit("setLoading", true);
-      const res = await this.$axios.get("/inventory", {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      });
-      this.$store.commit("SET", {
-        key: "items",
-        value: res.data.items,
-      });
-      this.$store.commit("setLoading", false);
-    }
+    await this.fetchItems();
   },
   methods: {
+    ...mapActions({
+      fetchItems: "fetchItems",
+      deleteItem: "deleteItem",
+      updateItemUrl: "updateItemUrl",
+      createItem: "createItem",
+    }),
     editItem(item) {
       this.editedIndex = this.items.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
-    deleteItem(item) {
-      confirm("Are you sure you want to delete this item?") &&
-        this.handleFileDeletion(item.inventoryId);
-    },
-    async handleFileDeletion(inventoryId) {
-      try {
-        const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.token}`,
-        };
-        this.$store.commit("setLoading", true);
-        await this.$axios.delete(`/inventory/${inventoryId}`, {
-          headers: headers,
-        });
-
-        const res = await this.$axios.get("/inventory", { headers });
-        this.$store.commit("SET", {
-          key: "items",
-          value: res.data.items,
-        });
-      } catch (err) {
-        console.log("err", err);
-      } finally {
-        this.$store.commit("setLoading", false);
-      }
+    async handleDeleteItem(item) {
+      if (confirm("Are you sure you want to delete this item?"))
+        await this.deleteItem(item.inventoryId);
     },
     handleFileUpload(file) {
       this.chosenFile = file;
@@ -210,58 +182,15 @@ export default {
     async save() {
       const form = this.$refs.myForm;
       if (form.validate()) {
-        const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.token}`,
-        };
         if (this.editedIndex > -1) {
-          this.$store.commit("setLoading", true);
-          const res = await this.$axios.post(
-            `/inventory/${this.editedItem.inventoryId}/attachment`,
-            null,
-            { headers: headers }
-          );
-
-          await this.$axios.put(res.data.uploadUrl, this.chosenFile, {
-            headers: {
-              "Content-Type": "image/jpeg",
-            },
+          // update attachment url
+          await this.updateItemUrl({
+            inventoryId: this.editedItem.inventoryId,
+            file: this.chosenFile,
           });
-
-          const resp = await this.$axios.get("/inventory", {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-            },
-          });
-          this.$store.commit("SET", {
-            key: "items",
-            value: resp.data.items,
-          });
-          this.$store.commit("setLoading", false);
         } else {
           // create
-          this.$store.commit("setLoading", true);
-          await this.$axios.post(
-            "/inventory",
-            {
-              name: this.editedItem.name,
-              price: parseInt(this.editedItem.price),
-              unit: parseInt(this.editedItem.unit),
-            },
-            { headers: headers }
-          );
-
-          const res = await this.$axios.get("/inventory", {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-            },
-          });
-
-          this.$store.commit("SET", {
-            key: "items",
-            value: res.data.items,
-          });
-          this.$store.commit("setLoading", false);
+          await this.createItem(this.editedItem);
         }
         this.close();
       }
