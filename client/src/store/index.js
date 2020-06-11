@@ -3,9 +3,24 @@ import Vuex from "vuex";
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
-  state: {},
-  mutations: {},
-  actions: {},
-  modules: {},
+const store = new Vuex.Store({
+  strict: true,
+  state: {
+    items: [],
+    token: undefined,
+    loading: false,
+  },
+  mutations: {
+    SET(state, payload) {
+      Vue.set(state, payload.key, payload.value);
+    },
+    setLoading(state, value) {
+      state.loading = value;
+    },
+    setToken(state, token) {
+      state.token = token;
+    },
+  },
 });
+
+export default store;

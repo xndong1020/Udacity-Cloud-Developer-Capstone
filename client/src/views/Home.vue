@@ -1,126 +1,235 @@
 <template>
-  <div class="dashboard">
-    <nav class="navbar navbar-dark bg-dark">
-      <a class="navbar-brand" href="#">
-        <img
-          src="https://a.storyblok.com/f/39898/1024x1024/dea4e1b62d/vue-js_logo-svg.png"
-          width="40"
-          height="40"
-        />
-      </a>
-      <div>
-        <img :src="$auth.user.picture" width="30" height="30" />
-        <span class="text-muted font-weight-light px-2">{{
-          $auth.user.name
-        }}</span>
-        <button
-          type="button"
-          class="btn btn-outline-secondary btn-sm"
-          @click="$auth.logout()"
-        >
-          Logout
-        </button>
-      </div>
-    </nav>
-
-    <div class="jumbotron">
-      <div class="container">
-        <h1 class="display-4">Hello, {{ $auth.user.name }}!</h1>
-        <p class="lead">
-          We hope you liked this tutorial and can now start building new
-          astounding projects from this start point. If you're interested in
-          what we're doing besides tech tutorials check out
-          <a href="https://www.storyblok.com">@storyblok</a>.
-        </p>
-        <hr class="my-4" />
-        <p>
-          TBH, I'm sure this project of yours would look great with a landing
-          page filled with content composed in
-          <a href="https://www.storyblok.com">Storyblok</a> 🎉
-        </p>
-
-        <p class="lead">
-          <a
-            class="btn btn-primary btn-lg"
-            href="https://www.storyblok.com/getting-started"
-            target="_blank"
-            role="button"
-            >Getting Started</a
-          >
-          <a
-            class="btn btn-secondary btn-lg"
-            href="https://twitter.com/home?status=Have%20a%20look%20at%20%40storyblok%20and%20their%20%40vuejs%20%2B%20%40auth0%20tutorial%3A%20https%3A//www.storyblok.com/tp/how-to-auth0-vuejs-authentication"
-            target="_blank"
-            role="button"
-            >Tweet it</a
-          >
-        </p>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="card-columns">
-        <a
-          class="card"
-          :href="getStoryLink(story)"
-          target="_blank"
-          v-for="(story, idx) in stories"
-          :key="idx"
-        >
-          <img
-            class="card-img-top"
-            :src="story.content.image"
-            :alt="story.content.image_alt"
-          />
-          <div class="card-body">
-            <h5 class="card-title">{{ story.content.title }}</h5>
-            <p class="card-text">
-              This is a longer card with supporting text below as a natural
-              lead-in to additional content. This content is a little bit
-              longer.
-            </p>
+  <div>
+    <v-container v-if="loading" fluid>
+      <v-row align="center" justify="center">
+        <v-col>
+          <div>
+            <img src="@/assets/loading.svg" />
           </div>
-        </a>
-      </div>
-    </div>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-data-table v-else :headers="headers" :items="items" class="elevation-1">
+      <template v-slot:top>
+        <v-toolbar flat color="white">
+          <v-toolbar-title>Admin Panel</v-toolbar-title>
+          <v-spacer></v-spacer>
+
+          <v-dialog v-model="uploadFile" max-width="500px">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on"
+                >New Item</v-btn
+              >
+            </template>
+            <v-form ref="myForm" v-model="valid">
+              <v-card>
+                <v-card-title>
+                  <span class="headline">{{ formTitle }}</span>
+                </v-card-title>
+
+                <v-card-text>
+                  <v-container>
+                    <v-row>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field
+                          v-model="editedItem.name"
+                          :disabled="editedIndex !== -1"
+                          :readonly="editedIndex !== -1"
+                          label="Dessert name"
+                          :rules="required"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field
+                          v-model="editedItem.price"
+                          :disabled="editedIndex !== -1"
+                          :readonly="editedIndex !== -1"
+                          type="number"
+                          label="Price"
+                          :rules="required"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field
+                          v-model="editedItem.unit"
+                          :disabled="editedIndex !== -1"
+                          :readonly="editedIndex !== -1"
+                          type="number"
+                          label="Unit"
+                          :rules="required"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row v-if="editedIndex !== -1">
+                      <v-col cols="12">
+                        <v-file-input
+                          label="Upload attachment"
+                          v-model="editedItem.file"
+                        ></v-file-input>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="close"
+                    >Cancel</v-btn
+                  >
+                  <v-btn color="blue darken-1" text @click="save">Save</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-form>
+          </v-dialog>
+        </v-toolbar>
+      </template>
+      <template v-slot:item.actions="{ item }">
+        <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
+        <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
+      </template>
+      <template v-slot:no-data>No data</template>
+    </v-data-table>
   </div>
 </template>
 
 <script>
-import axios from "axios";
+import { mapState } from "vuex";
 
 export default {
   data() {
     return {
-      stories: [],
+      valid: false,
+      dialog: false,
+      uploadFile: "",
+      required: [(v) => !!v || "This field is required"],
+      headers: [
+        { text: "name", value: "name" },
+        { text: "price", value: "price" },
+        { text: "unit", value: "unit" },
+        { text: "atachment", value: "attachmentUrl" },
+        { text: "Actions", value: "actions", sortable: false },
+      ],
+      editedIndex: -1,
+      editedItem: {
+        inventoryId: "",
+        name: "",
+        price: 0,
+        unit: 0,
+      },
+      defaultItem: {
+        inventoryId: "",
+        name: "",
+        price: 0,
+        unit: 0,
+      },
     };
   },
+  computed: {
+    ...mapState({
+      items: (state) => state.items,
+      loading: (state) => state.loading,
+      token: (state) => state.token,
+    }),
+    formTitle() {
+      return this.editedIndex === -1 ? "New Item" : "Edit Item";
+    },
+  },
+  watch: {
+    dialog(val) {
+      val || this.close();
+    },
+  },
   mounted() {
-    axios
-      .get(
-        "https://api.storyblok.com/v1/cdn/stories?starts_with=tp&excluding_fields=body&excluding_ids=48471,48547,60491&token=dtONJHwmxhdJOwKxyjlqAgtt"
-      )
-      .then((res) => {
-        this.stories = res.data.stories;
-      });
+    if (!this.token) {
+      const token = localStorage.getItem("id_token");
+      if (token) this.$store.commit("setToken", token);
+    }
+    if (this.token) {
+      this.$store.commit("setLoading", true);
+      this.$axios
+        .get("/inventory", {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        })
+        .then((res) => {
+          this.$store.commit("SET", {
+            key: "items",
+            value: res.data.items,
+          });
+        })
+        .finally(() => {
+          this.$store.commit("setLoading", false);
+        });
+    }
   },
   methods: {
-    getStoryLink(story) {
-      return `https://www.storyblok.com/${story.full_slug}`;
+    editItem(item) {
+      this.editedIndex = this.items.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.uploadFile = true;
+    },
+
+    deleteItem(item) {
+      const index = this.items.indexOf(item);
+      confirm("Are you sure you want to delete this item?") &&
+        this.items.splice(index, 1);
+    },
+
+    close() {
+      this.uploadFile = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+
+    save() {
+      const form = this.$refs.myForm;
+      if (form.validate()) {
+        if (this.editedIndex > -1) {
+          // Object.assign(this.items[this.editedIndex], this.editedItem);
+        } else {
+          // create
+          this.$store.commit("setLoading", true);
+          const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.token}`,
+          };
+          this.$axios
+            .post(
+              "/inventory",
+              {
+                name: this.editedItem.name,
+                price: parseInt(this.editedItem.price),
+                unit: parseInt(this.editedItem.unit),
+              },
+              { headers: headers }
+            )
+            .then(() => {
+              this.$axios
+                .get("/inventory", {
+                  headers: {
+                    Authorization: `Bearer ${this.token}`,
+                  },
+                })
+                .then((res) => {
+                  this.$store.commit("SET", {
+                    key: "items",
+                    value: res.data.items,
+                  });
+                })
+                .finally(() => {
+                  this.$store.commit("setLoading", false);
+                });
+            })
+            .finally(() => {
+              this.$store.commit("setLoading", false);
+            });
+        }
+        this.close();
+      }
     },
   },
 };
 </script>
-
-<style scoped>
-@import url("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css");
-
-.btn-primary {
-  background: #468f65;
-  border: 1px solid #468f65;
-}
-.card {
-  text-decoration: none;
-  color: #000;
-}
-</style>
