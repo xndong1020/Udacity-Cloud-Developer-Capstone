@@ -179,9 +179,30 @@ export default {
     },
 
     deleteItem(item) {
-      const index = this.items.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
-        this.items.splice(index, 1);
+        this.handleFileDeletion(item.inventoryId);
+    },
+    async handleFileDeletion(inventoryId) {
+      try {
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
+        };
+        this.$store.commit("setLoading", true);
+        await this.$axios.delete(`/inventory/${inventoryId}`, {
+          headers: headers,
+        });
+
+        const res = await this.$axios.get("/inventory", { headers });
+        this.$store.commit("SET", {
+          key: "items",
+          value: res.data.items,
+        });
+      } catch (err) {
+        console.log("err", err);
+      } finally {
+        this.$store.commit("setLoading", false);
+      }
     },
     handleFileUpload(file) {
       this.chosenFile = file;
