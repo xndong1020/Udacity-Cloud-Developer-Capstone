@@ -26,7 +26,7 @@
     "aws-sdk": "^2.694.0",
     "chai": "^4.2.0",
     "fork-ts-checker-webpack-plugin": "^4.1.6",
-    "mocha": "^8.0.1",
+    "mocha": "^8.4.0",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-iam-roles-per-function": "^2.0.2",
     "serverless-reqvalidator-plugin": "^1.0.3",
